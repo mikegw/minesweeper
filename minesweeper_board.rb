@@ -6,11 +6,32 @@ class Board
 
   def initialize(height, width, mines)
     @tiles = Array.new(height) { Array.new(width) }
-    @height, @width = height, width
     @game_over = nil
     @mines = mines
     @flags_on_board = 0
     fill_board(mines)
+  end
+
+  def height
+    @tiles.length
+  end
+
+  def width
+    @tiles[0].length
+  end
+
+  def [](pos)
+    row, col = pos
+    @tiles[row][col]
+  end
+
+  def []=(pos, value)
+    row, col = pos
+    @tiles[row][col] = value
+  end
+
+  def mine_count
+
   end
 
   def over?
@@ -72,7 +93,7 @@ class Board
     row, col = pos
     t = @tiles[row][col]
     if t.is_bomb?
-      t.bombed
+      t.exploded!
       @game_over = :lost
       return
     end
@@ -83,7 +104,7 @@ class Board
   def reveal(pos)
     row, col = pos
     t = @tiles[row][col]
-    t.revealed
+    t.revealed!
     bomb_count = get_neighbors(t).count(&:is_bomb?)
     if bomb_count > 0
       t.adjacent_bomb_count = bomb_count
@@ -106,7 +127,7 @@ class Board
       return
     end
     row, col = pos
-    @tiles[row][col].flagged
+    @tiles[row][col].flagged!
     @flags_on_board += 1
     check_flags if @flags_on_board == @mines
   end
@@ -121,11 +142,11 @@ class Board
   end
 
   def unflag(pos)
-    if @flags_on_board == 0 || !@tiles[row][col].flagged
+    if @flags_on_board == 0 || !@tiles[row][col].flagged?
       return
     end
     row, col = pos
-    @tiles[row][col].unexplored
+    @tiles[row][col].unexplored!
     @flags_on_board -= 1
   end
 
@@ -146,8 +167,8 @@ class Board
     each_pos do |row,col|
       t = @tiles[row][col]
       if t.is_bomb?
-        t.bombed if @game_over == :lost
-        t.flagged if @game_over == :won
+        t.exploded! if @game_over == :lost
+        t.flagged! if @game_over == :won
       else
         reveal([row,col])
       end
