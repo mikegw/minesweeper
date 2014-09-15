@@ -2,13 +2,12 @@ require_relative "minesweeper_tile"
 
 class Board
 
-  attr_accessor :tiles, :game_over
+  attr_accessor :tiles, :game_over, :play_time, :moves
 
-  def initialize(height, width, mines)
+  def initialize(height, width, mines, play_time = 0, moves = 0)
     @tiles = Array.new(height) { Array.new(width) }
-    @game_over = nil
-    @mines = mines
-    @flags_on_board = 0
+    @play_time = play_time
+    @moves = moves
     fill_board(mines)
   end
 
@@ -176,10 +175,10 @@ class Board
   end
 
   def show_board
-    puts "   " + (0...self.width).to_a.join(" ")
-    puts "   " + "_" * (2*self.width - 1)
+    puts "   " + (0...self.width).to_a.map{ |i| '%2.2s' % i.to_s }.join()
+    puts "    " + "_" * (2*self.width - 1)
     @tiles.each_with_index do |row,i|
-      print i.to_s + " |"
+      print '%2.2s' % i.to_s + " |"
       row.each_with_index do |tile, i |
         print tile.to_s
         print ' ' unless i == row.length - 1
@@ -187,7 +186,7 @@ class Board
       print "|"
       puts
     end
-    puts "   " + "\u{203E}" * (2*self.width - 1)
+    puts "    " + "\u{203E}" * (2*self.width - 1)
     nil
   end
 

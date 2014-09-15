@@ -1,0 +1,4 @@
+--- !ruby/object:Cat
+name: Dizzy
+age: 2
+location: NY
