@@ -11,7 +11,7 @@ class Game
   def play
     start_time = Time.now
     moves = 0
-    until @board.over?
+    until @board.game_over?
       system('clear')
       @board.show_board
       move, pos = get_move
