@@ -1,7 +1,7 @@
 class Tile
 
   STATUS_HASH = {unexplored: "\u{25A1}",
-                bombed: "\u{1F4A3}",
+                exploded: "\u{1F4A3}",
                 flagged:"\u{2691}",
                 revealed: ' '}
 
@@ -28,11 +28,13 @@ class Tile
       status_query = new_status_string[0..-2].to_sym
       raise StandardError unless STATUS_HASH.has_key?(status_query)
       return status_query == @status
+    elsif new_status_string[-1] == '!'
+      status_command = new_status_string[0..-2].to_sym
+      raise StandardError unless STATUS_HASH.has_key?(status_command)
+      @status = status_command
     end
 
-    raise StandardError, new_status.to_s unless STATUS_HASH.has_key?(new_status)
-
-    @status = new_status
+    nil
   end
 
   def trim_neighbors(height, width)
