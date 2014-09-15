@@ -7,7 +7,7 @@ class Board
   def initialize(height, width, mines)
     @tiles = Array.new(height) { Array.new(width) }
     @height, @width = height, width
-    @game_over = false
+    @game_over = nil
     fill_board(mines)
   end
 
@@ -51,6 +51,16 @@ class Board
     else
       #stuff
     end
+
+    return if @game_over == :lost
+
+    each_pos do |row, col|
+      if @tiles[row][col].unexplored? || @tiles[row][col].is_bomb?
+        return
+      end
+    end
+
+    @game_over = :won
   end
 
   def check(pos)
@@ -58,7 +68,7 @@ class Board
     t = @tiles[row][col]
     if t.is_bomb?
       t.bombed
-      @game_over = true
+      @game_over = :lost
       return
     end
 
@@ -104,7 +114,7 @@ class Board
     nil
   end
 
-  def game_over
+  def reveal_all
     each_pos do |row,col|
       t = @tiles[row][col]
       if t.is_bomb?

@@ -27,9 +27,14 @@ class Game
 
   def game_over
     system('clear')
-    @board.game_over
+    @board.reveal_all
     @board.show_board
-    "Game over, sucker!"
+    case @board.game_over
+    when :won
+      puts "Aaaaah, you won!!!"
+    when :lost
+      puts "Game over, sucker!"
+    end
   end
 
 
