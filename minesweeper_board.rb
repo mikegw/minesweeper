@@ -1,3 +1,5 @@
+require_relative "minesweeper_tile"
+
 class Board
 
   attr_accessor :tiles
