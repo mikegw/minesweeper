@@ -2,12 +2,14 @@ require_relative "minesweeper_tile"
 
 class Board
 
-  attr_accessor :tiles
+  attr_accessor :tiles, :game_over
 
   def initialize(height, width, mines)
     @tiles = Array.new(height) { Array.new(width) }
     @height, @width = height, width
     @game_over = nil
+    @mines = mines
+    @flags_on_board = 0
     fill_board(mines)
   end
 
@@ -26,7 +28,7 @@ class Board
 
   def place_mines(mines)
     bombs = Array.new(@width * @height, false)
-    mines.times {|i| bombs[i] = true}
+    mines.times { |i| bombs[i] = true }
     bombs.shuffle!
 
     each_pos do |row, col|
@@ -48,14 +50,17 @@ class Board
       check(pos)
     when 'f'
       flag(pos)
+    when 'u'
+      unflag(pos)
     else
-      #stuff
+      raise "Confused"
     end
 
     return if @game_over == :lost
 
     each_pos do |row, col|
-      if @tiles[row][col].unexplored? || @tiles[row][col].is_bomb?
+      t = @tiles[row][col]
+      if t.unexplored? && !t.is_bomb? && !t.flagged?
         return
       end
     end
@@ -93,12 +98,35 @@ class Board
   end
 
   def get_neighbors(tile)
-    tile.neighbors.map{|p| @tiles[p[0]][p[1]]}
+    tile.neighbors.map{ |p| @tiles[p[0]][p[1]] }
   end
 
   def flag(pos)
+    unless @flags_on_board < @mines
+      return
+    end
     row, col = pos
     @tiles[row][col].flagged
+    @flags_on_board += 1
+    check_flags if @flags_on_board == @mines
+  end
+
+  def check_flags
+    each_pos do |row, col|
+      t = @tiles[row][col]
+      return if t.flagged? && !t.is_bomb?
+    end
+
+    @game_over = :won
+  end
+
+  def unflag(pos)
+    if @flags_on_board == 0 || !@tiles[row][col].flagged
+      return
+    end
+    row, col = pos
+    @tiles[row][col].unexplored
+    @flags_on_board -= 1
   end
 
   def show_board
@@ -118,7 +146,8 @@ class Board
     each_pos do |row,col|
       t = @tiles[row][col]
       if t.is_bomb?
-        t.bombed
+        t.bombed if @game_over == :lost
+        t.flagged if @game_over == :won
       else
         reveal([row,col])
       end
